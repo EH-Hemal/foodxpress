@@ -30,6 +30,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  google_maps_flutter: ^2.2.0 # Or the latest version
+  google_maps_flutter_web: ^0.3.0
+  geolocator: ^9.0.1   # For fetching the user's current location  
+  
   
 
    

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:foodxpress/common/color_extension.dart';
 import 'package:foodxpress/common_widget/category_cell.dart';
 import 'package:foodxpress/common_widget/most_popular.dart';
@@ -16,14 +18,17 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   TextEditingController txtSearch = TextEditingController();
+  late GoogleMapController mapController;
+  LatLng _currentLocation = const LatLng(0.0, 0.0);
 
+  // Other data arrays remain unchanged
   List catArr = [
     {"image": "assets/img/cat_offer.png", "name": "Offers"},
     {"image": "assets/img/cat_sri.png", "name": "Sri Lankan"},
     {"image": "assets/img/cat_3.png", "name": "Italian"},
     {"image": "assets/img/cat_4.png", "name": "Indian"},
   ];
-   List popArr = [
+  List popArr = [
     {
       "image": "assets/img/res_1.png",
       "name": "Minute by tuk tuk",
@@ -67,7 +72,7 @@ class _HomeViewState extends State<HomeView> {
       "food_type": "Western Food"
     },
   ];
-   List recentArr = [
+  List recentArr = [
     {
       "image": "assets/img/item_1.png",
       "name": "Mulberry Pizza by Josh",
@@ -93,8 +98,22 @@ class _HomeViewState extends State<HomeView> {
       "food_type": "Western Food"
     },
   ];
-  
 
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentLocation();
+  }
+
+  Future<void> _getCurrentLocation() async {
+    // Requesting the current position of the user
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    setState(() {
+      _currentLocation = LatLng(position.latitude, position.longitude);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +130,7 @@ class _HomeViewState extends State<HomeView> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Hey, Feeling Hungry?Order Food.",
+                      "Hey, Feeling Hungry? Order Food.",
                       style: TextStyle(
                         color: TColor.primaryText,
                         fontSize: 20,
@@ -166,6 +185,30 @@ class _HomeViewState extends State<HomeView> {
                 ),
               ),
               const SizedBox(height: 20),
+
+              // **Google Map Section**
+              SizedBox(
+                height: 200, // Set the height for the map
+                width: double.infinity, // Make it full width
+                child: GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: _currentLocation,
+                    zoom: 15,
+                  ),
+                  onMapCreated: (GoogleMapController controller) {
+                    mapController = controller;
+                  },
+                  markers: {
+                    Marker(
+                      markerId: const MarkerId('current_location'),
+                      position: _currentLocation,
+                      infoWindow: const InfoWindow(title: 'Your Location'),
+                    ),
+                  },
+                ),
+              ),
+
+              // **Remaining UI Components** (no changes)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: RoundTextfield(
@@ -182,9 +225,9 @@ class _HomeViewState extends State<HomeView> {
                   ),
                 ),
               ),
-              const SizedBox(
-                height: 30,
-              ),
+              const SizedBox(height: 30),
+              // Other widgets...
+
               SizedBox(
                 height: 120,
                 child: ListView.builder(
@@ -200,7 +243,7 @@ class _HomeViewState extends State<HomeView> {
                   }),
                 ),
               ),
-               Padding(
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: ViewAllTitleRow(
                   title: "Popular Restaurants",
@@ -220,7 +263,7 @@ class _HomeViewState extends State<HomeView> {
                   );
                 }),
               ),
-               Padding(
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: ViewAllTitleRow(
                   title: "Most Popular",
@@ -242,7 +285,7 @@ class _HomeViewState extends State<HomeView> {
                   }),
                 ),
               ),
-               Padding(
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: ViewAllTitleRow(
                   title: "Recent Items",
@@ -262,12 +305,8 @@ class _HomeViewState extends State<HomeView> {
                   );
                 }),
               )
-              
             ],
-            
           ),
-          
-          
         ),
       ),
     );
